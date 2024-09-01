@@ -11,9 +11,11 @@ function FilterTodo(props){
                 className="custom-select my-1 mr-sm-2" 
                 id="task-action" 
                 onChange={props.handleFilter}>
-                <option value="">All</option>
-                <option value="1">Completed</option>
-                <option value="2">Uncompleted</option>
+                    {
+                        ['All','Completed','Pending'].map((option, index) =>
+                            <option key={index} value={index}>{option}</option>            
+                        )
+                    }
             </select>
         </form>
     )

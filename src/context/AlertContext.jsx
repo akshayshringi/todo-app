@@ -39,14 +39,14 @@ export const AlertProvider = ({ children}) => {
                     message: ''
                 }
             });
-        }, 3000)
+        }, 5000)
     }
 
     return (
        <AlertContext.Provider value={{ alterType, handleAlert }}>
             <div className='p-4'>
                 <div className={`alert alert-${alterType.type} alert-dismissible fade show`} role="alert" style={{display: `${alterType.type ? 'block': 'none'}`}}>
-                    <strong>Success !</strong> {alterType.message}
+                    <strong>{alterType.type === 'danger' ? 'Error' : alterType.type} !</strong> {alterType.message}
                 </div>    
             </div>
             {children}

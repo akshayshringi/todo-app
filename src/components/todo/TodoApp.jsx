@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, lazy } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@fortawesome/fontawesome-free/css/fontawesome.css';
 import '@fortawesome/fontawesome-free/css/brands.css';
@@ -6,9 +6,8 @@ import '@fortawesome/fontawesome-free/css/solid.css';
 import axios from 'axios';
 import TodoList from './TodoList';
 import AddTodo from './elements/AddTodo';
-import TodoItem from './elements/TodoItem';
-import FilterTodo from './elements/FilterTodo';
 import { AlertContext } from './../../context/AlertContext.jsx';
+import { TaskContext } from './context/TaskContext.jsx';
 
 
 /**
@@ -18,61 +17,21 @@ import { AlertContext } from './../../context/AlertContext.jsx';
 function TodoApp(){
 
     // constants
-    const LIMIT = 20;
-    const PAGE = 1;
     const USERID = 1;
     
-    // state 
-    const [todoList, setTodoList] = useState({
-        todos: {}
-    });
-    const [totalList, setTotalList] = useState(0);
+    // states 
     const [newTaskInput, setNewTask] = useState('');
 
     const { handleAlert }  = useContext(AlertContext);
+    const { todoListContext, taskCountContext, currentPageContext, filterInputContext, handleTaskList } = useContext(TaskContext);
 
     /**
      * useEffect to load data on page load
      * @method useEffect
      */
     useEffect(() => {
-        console.log('sdsd');
-        getData();
+        handleTaskList(1);
     }, []);
-
-    /**
-     * @method getData
-     */
-    function getData(){
-        let offset = PAGE > 1 ? PAGE * LIMIT : 0;
-        var todoListLocal = JSON.parse(localStorage.getItem("todos"));
-        if(!todoListLocal){
-            axios.get(`https://dummyjson.com/todos/user/${USERID}?limit=${LIMIT}&skip=${offset}`)
-            .then((result) => {
-                if(result.status === 200 && result.data && result.data.todos){
-                    localStorage.setItem("todos", JSON.stringify(result.data.todos));
-                    setTodoList((prevState) => {
-                        return {
-                            ...prevState,
-                            todos: result.data.todos
-                        }
-                    });
-                    handleAlert('success','List loaded');
-                }
-            })
-            .catch((err) => {
-            console.log(err.message); 
-            });
-        }else{
-            setTodoList((prevState) => {
-                return {
-                    ...prevState,
-                    todos: todoListLocal
-                }
-            });
-            handleAlert('success','List loaded');
-        }
-    }
 
     /**
      * 
@@ -88,8 +47,9 @@ function TodoApp(){
      */
     function addNewTask(e){
         e.preventDefault();
-        if(!newTaskInput){
-
+        if(newTaskInput == ''){
+            handleAlert('danger','Enter task in text field.');
+            return false;
         }
         let bodyPayload = JSON.stringify({
             todo: newTaskInput,
@@ -102,39 +62,94 @@ function TodoApp(){
               }
         }).then((result) => {
             if(result.status === 201 && result.data){
-                let cachedData = [result.data, ...todoList.todos];
+                // adding a auto incremented number in storage as well
+                let autoIncrement = localStorage.getItem('auto_increment') ? parseInt(localStorage.getItem('auto_increment')) + 1 : 1; 
+                result.data.id = autoIncrement;
+                let cachedData = todoListContext.todos.length > 0 ? [result.data, ...todoListContext.todos] : [result.data];
                 localStorage.setItem("todos", JSON.stringify(cachedData));
-                setTodoList((prevState) => {
-                    return {
-                        ...prevState,
-                        todos: cachedData
-                    }
-                });
+                localStorage.setItem("auto_increment", autoIncrement);
+                handleTaskList(1, filterInputContext);
                 setNewTask('');
                 handleAlert('success','Task created successfully');
+                
             }            
         }).catch((err) => {
-
+            handleAlert('danger',err.message);
         });
     }
 
-    return (
-        <div className="p-4">
+    /**
+     * @method handleFilter
+     */
+    function handleFilter(e){
+        handleTaskList(1, parseInt(e.target.value));
+    }
 
-            <h2><center>TODO APP</center></h2>
-            <FilterTodo />
-            <AddTodo
-                handleAddTask={handleAddTask}
-                newTaskInput={newTaskInput}
-                addNewTask={addNewTask}
-            />
-            
-            <div className="btn-group mb-3">
+    /**
+     * @method handlePagination
+     * @param {*} action 
+     */
+    function handlePagination(action){
+        let page = currentPageContext
+        if(action === 'next'){
+            page = page+1;
+        }else{
+            page = page-1;
+        }
+        handleTaskList(page, filterInputContext);
+    }
+
+    /**
+     * @method handleUpdateTask
+     * @param {*} e 
+     * @param {*} data 
+     */
+    function handleUpdateTask(e, data){
+        e.preventDefault();
+        let todoListLocal = JSON.parse(localStorage.getItem("todos"));
+        const findId = todoListLocal.findIndex((task) => task.id === data.id);
+        todoListLocal[findId]['completed'] = !data.completed;
+        localStorage.setItem('todos', JSON.stringify(todoListLocal));
+        handleTaskList(currentPageContext, filterInputContext);
+    }
+
+    /**
+     * 
+     * @method handleDeleteTask
+     * @param {*} e 
+     * @param {*} data 
+     */
+    function handleDeleteTask(e, data){
+        e.preventDefault();
+        let todoListLocal = JSON.parse(localStorage.getItem("todos"));
+        const findId = todoListLocal.findIndex((task) => task.id === data.id);
+        todoListLocal.splice(findId, 1);
+        localStorage.setItem('todos', JSON.stringify(todoListLocal));
+        handleTaskList(currentPageContext, filterInputContext);
+    }
+
+    return (
+        <div className="row flex-xl-nowrap">
+            <div className='col-12 col-md-12 bd-content'>
+                <h2><center>TODO APP ({taskCountContext})</center></h2>
+                <AddTodo
+                    handleAddTask={handleAddTask}
+                    newTaskInput={newTaskInput}
+                    addNewTask={addNewTask}
+                />
+                
+                <div className="btn-group mb-3">
+                </div>
+
+                <TodoList  
+                    handlePagination={handlePagination}
+                    handleFilter={handleFilter}  
+                    handleDeleteTask={handleDeleteTask}
+                    handleUpdateTask={handleUpdateTask}
+                />
             </div>
 
-            <TodoList 
-                todoList={todoList}                
-            />
+            
         </div>
     )
 

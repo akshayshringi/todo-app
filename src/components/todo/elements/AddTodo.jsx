@@ -11,9 +11,9 @@ function AddTodo(props){
                 <input
                 name="todo"
                 className="form-control"
-                placeholder="I'm going to..."
+                placeholder="your task will be ..."
                 value={props.newTaskInput} 
-                onChange={props.handleAddTask}
+                onChange={(e) => props.handleAddTask(e)}
                 />
                 <button className="btn btn-primary" onClick={(e) => props.addNewTask(e)}>Add</button>
             </form>
