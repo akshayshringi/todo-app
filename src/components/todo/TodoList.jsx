@@ -12,49 +12,43 @@ function TodoList(props){
 
     return (
         <>
+            <nav aria-label="Page navigation example">
+                <ul className="pagination justify-content-end">
+                    <li className='page-item' style={{ float: 'left', width: '100%'}}>
+                        <FilterTodo 
+                            filterInput={filterInputContext}
+                            handleFilter={props.handleFilter} 
+                        />
+                    </li>
+                    {
+                        taskCountContext > limitContext &&
+                        <>
+                            <li className={`page-item ${currentPageContext === 1 ? 'disabled' : ''}`}>
+                                <button disabled={currentPageContext === 1 ? true : false} className="page-link" onClick={(e) => props.handlePagination('prev')}>Previous</button>
+                            </li>
+                            <li className="page-item">
+                                <button className="page-link" onClick={(e) => props.handlePagination('next')}>Next</button>
+                            </li>
+                        </>
+                    }
+                </ul>
+            </nav>
+        
             {
                 todoListContext && todoListContext.todos && todoListContext.todos.length > 0 &&
-                <>
-                    <nav aria-label="Page navigation example">
-                        <ul className="pagination justify-content-end">
-                            <li className='page-item' style={{ float: 'left', width: '100%'}}>
-                                <FilterTodo 
-                                    filterInput={filterInputContext}
-                                    handleFilter={props.handleFilter} 
-                                />
-                            </li>
-                            {
-                                taskCountContext > limitContext &&
-                                <>
-                                    <li className={`page-item ${currentPageContext === 1 ? 'disabled' : ''}`}>
-                                        <button disabled={currentPageContext === 1 ? true : false} className="page-link" onClick={(e) => props.handlePagination('prev')}>Previous</button>
-                                    </li>
-                                    <li className="page-item">
-                                        <button className="page-link" onClick={(e) => props.handlePagination('next')}>Next</button>
-                                    </li>
-                                </>
-                            }
-                        </ul>
-                    </nav>
-                
-                
-                    <ul className="list-group">
-                        {todoListContext.todos.map((data, index) => (
-                            <React.Fragment key={index+1}>
-                                <TodoItem 
-                                    data={data}
-                                    handleDeleteTask={props.handleDeleteTask}
-                                    handleUpdateTask={props.handleUpdateTask}
-                                />
-                            </React.Fragment>
-                        ))}
-                    </ul>
-                </>
-                
+                <ul className="list-group">
+                    {todoListContext.todos.map((data, index) => (
+                        <React.Fragment key={index+1}>
+                            <TodoItem 
+                                data={data}
+                                handleDeleteTask={props.handleDeleteTask}
+                                handleUpdateTask={props.handleUpdateTask}
+                            />
+                        </React.Fragment>
+                    ))}
+                </ul>
             }
-            
         </>
-        
     )
 }
 

@@ -64,11 +64,12 @@ function TodoApp(){
             if(result.status === 201 && result.data){
                 // adding a auto incremented number in storage as well
                 let autoIncrement = localStorage.getItem('auto_increment') ? parseInt(localStorage.getItem('auto_increment')) + 1 : 1; 
+                let todoListLocal = JSON.parse(localStorage.getItem("todos"));
                 result.data.id = autoIncrement;
-                let cachedData = todoListContext.todos.length > 0 ? [result.data, ...todoListContext.todos] : [result.data];
+                let cachedData = todoListLocal.length > 0 ? [result.data, ...todoListLocal] : [result.data];
                 localStorage.setItem("todos", JSON.stringify(cachedData));
                 localStorage.setItem("auto_increment", autoIncrement);
-                handleTaskList(1, filterInputContext);
+                handleTaskList(1, '');
                 setNewTask('');
                 handleAlert('success','Task created successfully');
                 
