@@ -15,7 +15,7 @@ export const TaskProvider = ({ children}) => {
 
     const [limitContext] = useState(5);
     const [todoListContext, setTodoList] = useState({
-        todos: JSON.parse(localStorage.getItem("todos"))
+        todos: (localStorage.getItem("todos") ? JSON.parse(localStorage.getItem("todos")) : {})
     });
     const [filterInputContext, setFilterInput] = useState(0);
     const [currentPageContext, setCurrentPage] = useState(1);
