@@ -56,7 +56,6 @@ function TodoApp(){
             completed: false,
             userId: USERID
         });
-        console.log(bodyPayload);
         axios.post('https://dummyjson.com/todos/add', bodyPayload,{
             headers: {
                 'Content-Type': 'application/json'
@@ -77,7 +76,6 @@ function TodoApp(){
                 
             }            
         }).catch((err) => {
-            console.error(err);
             handleAlert('danger',err.message);
         });
     }
