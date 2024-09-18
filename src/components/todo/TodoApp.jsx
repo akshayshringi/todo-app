@@ -56,15 +56,17 @@ function TodoApp(){
             completed: false,
             userId: USERID
         });
+        console.log(bodyPayload);
         axios.post('https://dummyjson.com/todos/add', bodyPayload,{
             headers: {
                 'Content-Type': 'application/json'
               }
         }).then((result) => {
+            console.log(result);
             if(result.status === 201 && result.data){
                 // adding a auto incremented number in storage as well
                 let autoIncrement = localStorage.getItem('auto_increment') ? parseInt(localStorage.getItem('auto_increment')) + 1 : 1; 
-                let todoListLocal = JSON.parse(localStorage.getItem("todos"));
+                let todoListLocal = localStorage.getItem("todos") ? JSON.parse(localStorage.getItem("todos")) : [];
                 result.data.id = autoIncrement;
                 let cachedData = todoListLocal.length > 0 ? [result.data, ...todoListLocal] : [result.data];
                 localStorage.setItem("todos", JSON.stringify(cachedData));
@@ -75,6 +77,7 @@ function TodoApp(){
                 
             }            
         }).catch((err) => {
+            console.error(err);
             handleAlert('danger',err.message);
         });
     }
